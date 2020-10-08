@@ -1,5 +1,14 @@
 #include "dht11.h"
 
+
+void dht11_initialization(void) {
+    gpio_set_direction(GPIO_POWER, GPIO_MODE_OUTPUT);
+    gpio_set_direction(GPIO_DATA, GPIO_MODE_OUTPUT);
+    ESP_ERROR_CHECK(gpio_set_level(GPIO_POWER, 1));
+    ESP_ERROR_CHECK(gpio_set_level(GPIO_DATA, 1));
+    ets_delay_us(2000010);
+}
+
 static void read_data_error(char * level, char *exp) {
     write(2, "ERROR from function READ_DATA: ", 31);
     write(2, level, strlen(level));
@@ -21,7 +30,7 @@ static int read_data(int time, int mode) {
     return count;
 }
 
-static void sensor_activation(void) {
+void sensor_activation(void) {
     ESP_ERROR_CHECK(gpio_set_direction(GPIO_DATA, GPIO_MODE_OUTPUT)); //for print
     ESP_ERROR_CHECK(gpio_set_level(GPIO_DATA, 1));
     ESP_ERROR_CHECK(gpio_set_level(GPIO_DATA, 0));
@@ -35,16 +44,16 @@ static void sensor_activation(void) {
         read_data_error("level_2","1");
 }
 
-static void check_sum (uint8_t *bin_nbr, t_app *app) {
-    if ((bin_nbr[0] + bin_nbr[1] + bin_nbr[2] + bin_nbr[3]) != bin_nbr[4])
-        write(2, "ERROR FROM CHECK_SUM\n", 21);
-    else {
-        app->temp_hum[0] = bin_nbr[2]; // temperature
-        app->temp_hum[1] = bin_nbr[0]; // humidity
+static int check_sum (uint8_t *bin_nbr) {
+    if ((bin_nbr[0] + bin_nbr[1] + bin_nbr[2] + bin_nbr[3]) != bin_nbr[4]) {
+        return -1;
     }
+    else
+        return 0;
+
 }
 
-static void data_reception(t_app *app) {
+int take_data_from_dht11(int *temp_hum) {
     int result = 2;
     int i = 0;
 
@@ -61,32 +70,13 @@ static void data_reception(t_app *app) {
             bin_nbr[i / 8] += 1;
         i++;
     }
-    check_sum(bin_nbr, app);
-}
-
-static void dht11_initialization() {
-    gpio_set_direction(GPIO_POWER, GPIO_MODE_OUTPUT);
-    gpio_set_direction(GPIO_DATA, GPIO_MODE_OUTPUT);
-    ESP_ERROR_CHECK(gpio_set_level(GPIO_POWER, 1));
-    ESP_ERROR_CHECK(gpio_set_level(GPIO_DATA, 1));
-    ets_delay_us(2000010);
-}
-
-void data_from_dht11(void *arg) {
-    dht11_initialization();
-    t_app *app = (t_app*)arg;
-
-    while(1) {
-        sensor_activation();
-        data_reception(app);
-//        printf("in dht %d  %d\n\n", app->temp_hum[0], app->temp_hum[1]);
-
-        printf("%d %d\n\n", app->temp_hum[0], app->temp_hum[1]);
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+    if(check_sum(bin_nbr) == -1) {
+        return -1;
     }
+    else {
+        temp_hum[0] = bin_nbr[2];
+        temp_hum[1] = bin_nbr[0];
+        return 0;
+    }
+
 }
-/*
- *   for(int k = 0; k < 5; k++)
-//        printf("%d ", bin_nbr[k]);
-//    printf("\n");
- */

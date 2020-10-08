@@ -33,11 +33,10 @@
 #include "driver/gpio.h"
 #include "esp_err.h"
 #include <driver/dac.h>
-#include "dht11.h"
 
 
-//void accel_config(spi_device_handle_t *spi);
-void data_from_acclerometer(void* arg)
+void accel_config(spi_device_handle_t *spi);
+void read_acceleration (spi_device_handle_t spi, int16_t *accs);
 //void leds(int value);
 //void beeep(void);
 //void config_leds_and_beeep();

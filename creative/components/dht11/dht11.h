@@ -24,16 +24,8 @@ struct s_message {
 } xMessage;
 
 
-typedef struct s_app {
-    int temp_hum[2];
-    int view;
-    int button1;
-    int button2;
-} t_app;
-
-//void read_data_error(char * level, char *exp);
-//int read_data(int time, int mode);
-//void check_sum (uint8_t *bin_nbr, t_app *app);
-void data_from_dht11(void *arg);
+void dht11_initialization(void);
+void sensor_activation(void);
+int take_data_from_dht11(int *temp_hum);
 
 #endif

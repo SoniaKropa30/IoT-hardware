@@ -10,9 +10,9 @@ static void power_managment(spi_device_handle_t spi, uint8_t reg_power_ctl,
     ESP_ERROR_CHECK(spi_device_polling_transmit(spi, &trans));
 }
 
-static void accel_config(spi_device_handle_t *spi) {
+void accel_config(spi_device_handle_t *spi) {
     if(!spi) {
-        print_error("ERROR: structure of type spi_device_handle_t *handle is expected\n");
+        write(2, "ERROR: structure of type spi_device_handle_t *handle is expected\n", 66);
         exit(1);
     }
     ESP_ERROR_CHECK(gpio_set_direction(GPIO_NUM_23, GPIO_MODE_OUTPUT));
@@ -38,7 +38,7 @@ static void accel_config(spi_device_handle_t *spi) {
     power_managment(*spi, REG_POWER_CTL, POWER_CTL_MEASURE);
 }
 
-static void read_acceleration (spi_device_handle_t spi, int16_t *accs) {
+void read_acceleration (spi_device_handle_t spi, int16_t *accs) {
     uint8_t tx_buffer[3U * sizeof(uint16_t)];
 
     spi_transaction_t trans = {
@@ -50,20 +50,4 @@ static void read_acceleration (spi_device_handle_t spi, int16_t *accs) {
     ESP_ERROR_CHECK(spi_device_polling_transmit(spi, &trans));
 }
 
-void data_from_acclerometer(void* arg) {
-    t_app *apps = (t_app*)arg;
-    int16_t accs[3];
-    spi_device_handle_t spi;
-    accel_config(&spi);
-
-    while (1) {
-        read_acceleration(spi, accs);
-//        printf("xyz %d      %d      %d\n", (int)accs[0], (int)accs[1], (int)accs[2]);
-
-        if(accs[2] > 0)
-            apps->view  = 0;
-        else
-            apps->view  = 1;
-    }
-}
 

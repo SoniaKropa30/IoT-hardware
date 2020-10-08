@@ -1,23 +1,19 @@
-#include "accelerometer.h"
-//#include "buttons.h"
-#include "dht11.h"
-//#include "oled.h"
-
-
-
+#include "hardware_creative.h"
 
 void app_main() {
     t_app *apps = malloc(sizeof(t_app));
     bzero(apps, sizeof(t_app));
 
-//    xTaskCreate(data_from_buttons, "data_from_buttons", 2048,
-//                apps, 1, NULL);
-
     xTaskCreate(data_from_dht11, "data_from_dht11", 2048,
                 apps, 1, NULL);
 
-//    xTaskCreate(data_from_acclerometer, "data_from_acclerometer", 4096,
+//
+//    xTaskCreate(data_from_buttons, "data_from_buttons", 2048,
 //                apps, 1, NULL);
+//
+//
+    xTaskCreate(data_from_acclerometer, "data_from_acclerometer", 4096,
+                apps, 1, NULL);
     xTaskCreate(data_to_oled, "data_to_oled", 4096,
                 apps, 1, NULL);
 

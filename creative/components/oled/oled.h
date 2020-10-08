@@ -1,3 +1,4 @@
+
 #ifndef OLED_H
 #define OLED_H
 
@@ -15,7 +16,6 @@
 #include "driver/i2c.h"
 #include <strings.h>
 #include <string.h>
-#include "dht11.h"
 
 typedef struct s_display {
     uint8_t addr;           // I2C address
@@ -24,8 +24,10 @@ typedef struct s_display {
     uint8_t *font_str; // page buffer
 } t_display;
 
-//void write_to_oled(t_display *display, char *str);
-//void oled_update(t_display *display, char *str);
-//void oled_clear(t_display *display);
-void data_to_oled(void *arg);
+void write_to_oled(t_display *display, char *str);
+void oled_update(t_display *display, char *str);
+void oled_clear(t_display *display);
+void oled_initialization(t_display *display);
+void init_i2c(void);
+//void data_to_oled(void *arg);
 #endif
