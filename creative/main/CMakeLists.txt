@@ -1,9 +1,10 @@
 idf_component_register(SRCS "main.c"
-                        SRCS "dht_task.c"
-                        SRCS "oled_task.c"
-                        SRCS "accelerometer_task.c"
+                        SRCS "task_dht.c"
+                        SRCS "task_oled.c"
+                        SRCS "task_buttons.c"
+                        SRCS "task_accelerometer.c"
                         INCLUDE_DIRS "."
-#                        REQUIRES buttons
+                        REQUIRES buttons
                         REQUIRES dht11
                         REQUIRES oled
                         REQUIRES accelerometer

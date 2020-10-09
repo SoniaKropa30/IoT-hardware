@@ -15,18 +15,7 @@
 #define GPIO_POWER 2
 #define GPIO_DATA 4
 
-
-
-
-
-
-
-
-
-
-//int read_data(int time, int mode);
 //void sensor_activation(void);
-//void check_sum (uint8_t *bin_nbr, t_app *app);
-//void data_from_dht11(void* arg);
-
+//void check_sum (uint8_t *bin_nbr);
+void data_from_dht11(void *arg);
 #endif

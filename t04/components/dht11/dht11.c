@@ -1,21 +1,27 @@
 #include "dht11.h"
+void dht11_initialization(void) {
+    gpio_set_direction(GPIO_POWER, GPIO_MODE_OUTPUT);
+    gpio_set_direction(GPIO_DATA, GPIO_MODE_OUTPUT);
+    ESP_ERROR_CHECK(gpio_set_level(GPIO_POWER, 1));
+    ESP_ERROR_CHECK(gpio_set_level(GPIO_DATA, 1));
+    ets_delay_us(2000010);
+}
 
-int read_data(int time, int mode) {
+static void read_data_error(char * level, char *exp) {
+    write(2, "error from function READ_DATA: ", 31);
+    write(2, level, strlen(level));
+    write(2, " expected ", 34);
+    write(2, exp, strlen(exp));
+    write(2, "\n", 1);
+}
+
+static int read_data(int time, int mode) {
     int count = 0;
-    int i = 0;
-    _Bool before_mode = 0;
-
-    while (i < time) {
-        if(gpio_get_level(GPIO_DATA) != mode && !before_mode)
-            continue;
-        else if (gpio_get_level(GPIO_DATA) == mode) {
-            before_mode = 1;
-            count++;
-        }
-        else
-            break;
+    while (gpio_get_level(GPIO_DATA) == mode) {
+        if (count > time)
+            return -1;
         ets_delay_us(1);
-        i++;
+        count++;
     }
     if (count == 0)
         return -1;
@@ -23,27 +29,63 @@ int read_data(int time, int mode) {
 }
 
 void sensor_activation(void) {
-    gpio_set_direction(GPIO_POWER, GPIO_MODE_OUTPUT);
-    gpio_set_direction(GPIO_DATA, GPIO_MODE_OUTPUT);
-    gpio_set_level(GPIO_POWER, 1);
-    gpio_set_level(GPIO_DATA, 1);
-    ets_delay_us(3000000);
-
-    gpio_set_level(GPIO_DATA, 0);
+    ESP_ERROR_CHECK(gpio_set_direction(GPIO_DATA, GPIO_MODE_OUTPUT)); //for print
+    ESP_ERROR_CHECK(gpio_set_level(GPIO_DATA, 1));
+    ESP_ERROR_CHECK(gpio_set_level(GPIO_DATA, 0));
     ets_delay_us(18000);
-
-    gpio_set_level(GPIO_DATA, 1);
-    ets_delay_us(40);
-
-    gpio_set_direction(GPIO_DATA, GPIO_MODE_INPUT); //for print
+    ESP_ERROR_CHECK(gpio_set_level(GPIO_DATA, 1));
+    ets_delay_us(30);
+    ESP_ERROR_CHECK(gpio_set_direction(GPIO_DATA, GPIO_MODE_INPUT)); // todo was checked
+    if((read_data(80, 0)) == -1)
+        read_data_error("level_1","0");
+    if((read_data(80, 1)) == -1)
+        read_data_error("level_2","1");
 }
 
-void check_sum (uint8_t *bin_nbr) {
-    if ((bin_nbr[0] + bin_nbr[1] + bin_nbr[2] + bin_nbr[3]) != bin_nbr[4])
-        write(2, "ERROR FROM CHECK_SUM\n", 21);
+static int check_sum (uint8_t *bin_nbr) {
+    if ((bin_nbr[0] + bin_nbr[1] + bin_nbr[2] + bin_nbr[3]) != bin_nbr[4]) {
+        return -1;
+    }
     else
-        printf("Temperature: %d C^M\nHumidity: %d %%^M\n",bin_nbr[2], bin_nbr[0]);
-    free(bin_nbr);
-    gpio_set_level(GPIO_POWER, 0);
-    gpio_set_level(GPIO_DATA, 0);
+        return 0;
+
+}
+
+static int take_data_from_dht11(int *temp_hum) {
+    int result = 2;
+    int i = 0;
+    uint8_t bin_nbr[5];
+    bzero(&bin_nbr, (sizeof(uint8_t) * 5));
+
+    while (i < 40) {
+        read_data(50, 0);
+        result = read_data(70, 1);
+        bin_nbr[i / 8] <<= 1; // ont the first iteration all bits will be 0;
+        if (result > 28)
+            bin_nbr[i / 8] += 1;
+        i++;
+    }
+    if(check_sum(bin_nbr) == -1) {
+        return -1;
+    }
+    else {
+        temp_hum[0] = bin_nbr[2];
+        temp_hum[1] = bin_nbr[0];
+        return 0;
+    }
+}
+
+void data_from_dht11(void *arg) {
+    dht11_initialization();
+    int temp_hum[2];
+
+    while(1) {
+        sensor_activation();
+        take_data_from_dht11(temp_hum);
+        vTaskDelay(2000/portTICK_PERIOD_MS);
+        printf("Temperature: %d C^M\n", temp_hum[0]);
+        printf("Humidity: %d %%^M\n", temp_hum[1]);
+        vTaskDelay(10/portTICK_PERIOD_MS);
+
+    }
 }

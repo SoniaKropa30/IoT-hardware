@@ -1,7 +1,3 @@
-//
-// Created by Sofiia Kropyvianska on 9/23/20.
-//
-
 #ifndef BUTTONS_H
 #define BUTTONS_H
 

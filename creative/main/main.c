@@ -6,16 +6,13 @@ void app_main() {
 
     xTaskCreate(data_from_dht11, "data_from_dht11", 2048,
                 apps, 1, NULL);
-
-//
-//    xTaskCreate(data_from_buttons, "data_from_buttons", 2048,
-//                apps, 1, NULL);
-//
-//
-    xTaskCreate(data_from_acclerometer, "data_from_acclerometer", 4096,
-                apps, 1, NULL);
     xTaskCreate(data_to_oled, "data_to_oled", 4096,
                 apps, 1, NULL);
+    xTaskCreate(data_from_buttons, "data_from_buttons", 2048,
+                apps, 2, NULL);
+    xTaskCreate(data_from_acclerometer, "data_from_acclerometer", 4096,
+                apps, 3, NULL);
+
 
 
 }

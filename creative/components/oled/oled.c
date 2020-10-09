@@ -61,13 +61,8 @@ void oled_initialization(t_display *display) {
     i2c_master_write_byte(cmd, 0xFF, true);
     i2c_master_write_byte(cmd, 0x8D, true); // charge pump
     i2c_master_write_byte(cmd, 0x14, true);
-
-// view
-
     i2c_master_write_byte(cmd, 0x20, true); // for horizontal view
     i2c_master_write_byte(cmd, 0x00, true);
-
-
     i2c_master_write_byte(cmd, 0x10, true); // high column
     i2c_master_write_byte(cmd, 0xB0, true);
     i2c_master_write_byte(cmd, 0xC8, true);

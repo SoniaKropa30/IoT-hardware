@@ -11,10 +11,10 @@
 #define GPIO_LED_3 33
 
 void app_main() {
-    gpio_set_direction(GPIO_LED_1, GPIO_MODE_OUTPUT);
-    gpio_set_direction(GPIO_LED_2, GPIO_MODE_OUTPUT);
-    gpio_set_direction(GPIO_LED_3, GPIO_MODE_OUTPUT);
-    gpio_set_level(GPIO_LED_1, 1);
-    gpio_set_level(GPIO_LED_2, 1);
-    gpio_set_level(GPIO_LED_3, 1);
+    ESP_ERROR_CHECK(gpio_set_direction(GPIO_LED_1, GPIO_MODE_OUTPUT));
+    ESP_ERROR_CHECK(gpio_set_direction(GPIO_LED_2, GPIO_MODE_OUTPUT));
+    ESP_ERROR_CHECK(gpio_set_direction(GPIO_LED_3, GPIO_MODE_OUTPUT));
+    ESP_ERROR_CHECK(gpio_set_level(GPIO_LED_1, 1));
+    ESP_ERROR_CHECK(gpio_set_level(GPIO_LED_2, 1));
+    ESP_ERROR_CHECK(gpio_set_level(GPIO_LED_3, 1));
 }

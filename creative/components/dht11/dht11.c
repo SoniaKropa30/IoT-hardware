@@ -1,6 +1,5 @@
 #include "dht11.h"
 
-
 void dht11_initialization(void) {
     gpio_set_direction(GPIO_POWER, GPIO_MODE_OUTPUT);
     gpio_set_direction(GPIO_DATA, GPIO_MODE_OUTPUT);
@@ -10,11 +9,7 @@ void dht11_initialization(void) {
 }
 
 static void read_data_error(char * level, char *exp) {
-    write(2, "ERROR from function READ_DATA: ", 31);
-    write(2, level, strlen(level));
-    write(2, " expected ", 34);
-    write(2, exp, strlen(exp));
-    write(2, "\n", 1);
+    write(2, "waiting dht11\n", 15);
 }
 
 static int read_data(int time, int mode) {
@@ -56,15 +51,12 @@ static int check_sum (uint8_t *bin_nbr) {
 int take_data_from_dht11(int *temp_hum) {
     int result = 2;
     int i = 0;
-
     uint8_t bin_nbr[5];
     bzero(&bin_nbr, (sizeof(uint8_t) * 5));
 
     while (i < 40) {
-        if ((read_data(50, 0)) == -1)
-            read_data_error("level_3","0");
-        if ((result = read_data(70, 1)) == -1)
-            read_data_error("level_4","1/0");
+        read_data(50, 0);
+        result = read_data(70, 1);
         bin_nbr[i / 8] <<= 1; // ont the first iteration all bits will be 0;
         if (result > 28)
             bin_nbr[i / 8] += 1;
@@ -78,5 +70,4 @@ int take_data_from_dht11(int *temp_hum) {
         temp_hum[1] = bin_nbr[0];
         return 0;
     }
-
 }
