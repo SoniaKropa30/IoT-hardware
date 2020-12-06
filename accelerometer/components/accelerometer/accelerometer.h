@@ -35,6 +35,8 @@
 #include <driver/dac.h>
 
 void accel_config(spi_device_handle_t *spi);
-void read_acceleration (spi_device_handle_t spi, int16_t *accs);
-
+void read_acceleration_task(void* pvParameters);
+void leds(int value);
+void beeep(void);
+void config_leds_and_beeep();
 #endif

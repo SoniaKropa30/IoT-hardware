@@ -1,5 +1,9 @@
 #include "accelerometer.h"
 
+static void print_error(char *str) {
+    write(2, str, strlen(str));
+}
+
 static void power_managment(spi_device_handle_t spi, uint8_t reg_power_ctl,
                             uint8_t power_ctl_measure) {
     spi_transaction_t trans = {
@@ -12,7 +16,7 @@ static void power_managment(spi_device_handle_t spi, uint8_t reg_power_ctl,
 
 void accel_config(spi_device_handle_t *spi) {
     if(!spi) {
-        write(2, "ERROR: structure of type spi_device_handle_t *handle is expected\n", 66);
+        print_error("ERROR: structure of type spi_device_handle_t *handle is expected\n");
         exit(1);
     }
     ESP_ERROR_CHECK(gpio_set_direction(GPIO_NUM_23, GPIO_MODE_OUTPUT));
@@ -38,7 +42,7 @@ void accel_config(spi_device_handle_t *spi) {
     power_managment(*spi, REG_POWER_CTL, POWER_CTL_MEASURE);
 }
 
-void read_acceleration (spi_device_handle_t spi, int16_t *accs) {
+static void read_acceleration (spi_device_handle_t spi, int16_t *accs) {
     uint8_t tx_buffer[3U * sizeof(uint16_t)];
 
     spi_transaction_t trans = {
@@ -50,4 +54,21 @@ void read_acceleration (spi_device_handle_t spi, int16_t *accs) {
     ESP_ERROR_CHECK(spi_device_polling_transmit(spi, &trans));
 }
 
+void read_acceleration_task(void* pvParameters) {
+    int16_t accs[3];
+    spi_device_handle_t spi = (spi_device_handle_t)pvParameters;
+
+    while (1) {
+        read_acceleration(spi, accs);
+        printf("xyz %d      %d      %d\n", (int)accs[0], (int)accs[1], (int)accs[2]);
+        if (accs[2] > -15  && accs[2] < 30) {
+            leds(1);
+            beeep();
+        }
+        else
+            leds(0);
+        vTaskDelay(10 / portTICK_PERIOD_MS); // todo chek delay
+
+    }
+}
 
